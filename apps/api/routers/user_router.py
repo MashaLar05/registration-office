@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ..database import get_db
+from apps.api.database import get_db
 from ..services.user_server import create_user, get_user, get_user_by_id, update_user, delete_user
 from ..models.user_role import RoleEnum
 from datetime import datetime

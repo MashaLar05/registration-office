@@ -2,17 +2,14 @@ from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
-
-from .api.database import engine, Base
+from apps.api.routers.user_router import router as user_router
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+app.include_router(user_router)
 
 templates = Jinja2Templates(directory="apps/client/pages")
 app.mount("/static", StaticFiles(directory="apps/client/styles"), name="static")
-
 
 @app.get("/")
 async def read_root(request: Request):
