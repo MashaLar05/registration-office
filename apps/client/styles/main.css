@@ -1,0 +1,43 @@
+* {
+  font-family: "Times New Roman", Times, serif;
+}
+body {
+  background: rgba(30, 154, 73, 0.25);
+}
+.greeting-div {
+  font-size: 48px;
+  width: 100%;
+  text-align: center;
+  margin-top: 174px;
+  margin-bottom: 174px;
+}
+
+footer {
+  background: rgb(242, 249, 251);
+  bottom: 0;
+  position: absolute;
+  width: 100%;
+  padding: 15px;
+  text-align: center;
+}
+
+.main-title {
+  font-size: 48px;
+  color: rgb(2, 39, 38);
+}
+
+.sub-title {
+  font-size: 36px;
+  color: rgb(2, 39, 38);
+  margin: 15px;
+}
+
+.text {
+  font-size: 18px;
+  color: rgb(2, 39, 38);
+}
+
+.small-text {
+  font-size: 15px;
+  color: rgb(2, 39, 38);
+}

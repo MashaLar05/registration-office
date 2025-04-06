@@ -4,10 +4,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ table_name }} Management</title>
+    <link rel="stylesheet" type="text/css" href="/static/entities.css" />
   </head>
   <body>
     <h2>CRUD for {{ table_name }}</h2>
     <p>Here will be CRUD operations for {{ table_name }}</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Ім'я</th>
+          <th>Прізвище</th>
+          <th>Роль</th>
+          <th>Дата народження</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <script>
+      async function getUsers() {
+        // надсилає запит і отримуємо відповідь
+        const response = await fetch("/users", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+        // якщо запит пройшов нормально
+        if (response.ok === true) {
+          // отримуємо дані
+          const users = await response.json();
+          const rows = document.querySelector("tbody");
+          // додаємо отримані елементи в таблицю
+          users.forEach((user) => rows.append(row(user)));
+        }
+      }
+    </script>
   </body>
 </html>
-
