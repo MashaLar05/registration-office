@@ -1,9 +1,6 @@
-from sqlalchemy import Column, Date, DateTime, Enum, Integer, ForeignKey, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
-from .user_role import RoleEnum
-from ..database import Base
-
+from sqlalchemy import Column, DateTime, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from apps.api.database import Base
 
 class Appointment(Base):
     __tablename__ = "appointments"

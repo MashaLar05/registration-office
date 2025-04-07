@@ -3,7 +3,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from ..database import Base
 
-
 class Doctor(Base):
     __tablename__ = "doctors"
 

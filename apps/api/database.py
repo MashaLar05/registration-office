@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker
 
 DATABASE_URL = "sqlite:///./database.db"
 
@@ -19,7 +19,7 @@ def get_db():
     finally:
         db.close()
 
-
+from .models import user, appointments, doctor
 
 Base.metadata.create_all(bind=engine)
 

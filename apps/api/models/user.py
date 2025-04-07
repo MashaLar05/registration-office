@@ -1,9 +1,7 @@
-from sqlalchemy import Column, DateTime, Enum, Integer, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy import Column, DateTime, Enum, Integer, String
+from sqlalchemy.orm import relationship
 from .user_role import RoleEnum
-from ..database import Base
-from apps.api.models.appointments import Appointment
+from apps.api.database import Base
 
 class User(Base):
     __tablename__ = "users"
