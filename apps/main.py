@@ -2,9 +2,13 @@ from fastapi import FastAPI
 from fastapi.requests import Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from apps.api.routers.user_router import router as user_router
+#from apps.api.routers.user_router import router as user_router
+from apps.api.routers.user_routerPostgreSql import router as user_router
 
-app = FastAPI()
+app = FastAPI(
+    title="User Management API",
+    description="API для управління користувачами.",
+)
 
 app.include_router(user_router)
 
