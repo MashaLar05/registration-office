@@ -99,7 +99,7 @@
       }
 
       async function editUser(id, name, last_name, role, date_of_birth) {
-        console.log("гзвфеу user with ID:", id);
+        console.log("Editing user with ID:", id);
         const response = await fetch(`/users/${id}`, {
           method: "PUT",
           headers: {
