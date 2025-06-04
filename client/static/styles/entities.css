@@ -1,0 +1,22 @@
+.label {
+  margin: 10px;
+  width: 40%;
+}
+
+.buttons {
+  padding-top: 18px;
+}
+
+.table-buttons {
+  padding: 5px;
+  margin: 5px;
+}
+
+.text {
+  margin-top: 12px;
+}
+
+.table-container {
+  width: 80%;
+  justify-self: center;
+}

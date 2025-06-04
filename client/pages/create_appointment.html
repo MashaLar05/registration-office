@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Створити запис</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" href="/static/styles/main.css" />
+    <link rel="stylesheet" type="text/css" href="/static/styles/entities.css" />
+  </head>
+  <body>
+    <header>{% include 'navbar.html' %}</header>
+    <h2 class="sub-title">Створити запис</h2>
+
+    <div class="label">
+      <input type="hidden" id="id" />
+      <input type="hidden" id="csrf_token" value="{{ csrf_token }}" />
+      <div class="input-group text mb-3">
+        <span class="input-group-text" id="basic-addon1">Паціент</span>
+        <input
+          id="user"
+          type="text"
+          class="form-control"
+          value="{{ user.name }} {{ user.last_name }}"
+          readonly
+        />
+        <input type="hidden" id="user_id" value="{{ user.id }}" />
+      </div>
+      <div class="input-group text mb-3">
+        <span class="input-group-text" id="basic-addon2">Лікар</span>
+        <select id="doctor_id" class="form-control" aria-label="Doctor">
+          <option value="">Виберіть лікаря</option>
+        </select>
+      </div>
+      <div class="invalid-feedback">Лікаря не знайдено</div>
+      <div class="text input-group flex-nowrap mb-3">
+        <span class="input-group-text" id="addon-wrapping">Дата та час:</span>
+        <input
+          id="date_time"
+          type="datetime-local"
+          class="form-control"
+          aria-describedby="addon-wrapping"
+        />
+      </div>
+      <div class="text buttons">
+        <button id="saveBtn" class="btn btn-outline-success">Зберегти</button>
+        <button id="resetBtn" class="btn btn-outline-secondary">Скинути</button>
+      </div>
+    </div>
+    <div class="table-container">
+      Мої записи
+      <table class="table table-sm table-hover table-striped">
+        <thead>
+          <tr>
+            <th>Паціент</th>
+            <th>Лікар</th>
+            <th>Дата та час</th>
+            <th>Дії</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <a href="/" class="btn btn-outline-secondary small-text m-3">Назад</a>
+    <script>
+      // Получить CSRF-токен
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      // Заполнить список врачей
+      async function populateDoctors() {
+        try {
+          const response = await fetch("/doctors/", {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
+          if (response.ok) {
+            const doctors = await response.json();
+            console.log("Doctors:", doctors); // Отладка
+            const select = document.getElementById("doctor_id");
+            doctors.forEach((doctor) => {
+              const option = document.createElement("option");
+              option.value = doctor.id;
+              option.text = `${doctor.name} ${doctor.last_name}`;
+              select.appendChild(option);
+            });
+          } else {
+            console.error("Failed to fetch doctors:", response.status);
+          }
+        } catch (error) {
+          console.error("Error fetching doctors:", error);
+        }
+      }
+
+      // Получить записи текущего пользователя
+      async function getAppointments() {
+        try {
+          const response = await fetch(`/user_appointments/`, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
+          if (response.ok) {
+            const appointments = await response.json();
+            console.log("Appointments:", appointments); // Отладка
+            const rows = document.querySelector("tbody");
+            rows.innerHTML = ""; // Очищаем таблицу
+            appointments.forEach((appointment) =>
+              rows.append(row(appointment))
+            );
+          } else {
+            console.error("Failed to fetch appointments:", response.status);
+          }
+        } catch (error) {
+          console.error("Error fetching appointments:", error);
+        }
+      }
+
+      // Получить запись по ID
+      async function getAppointment(id) {
+        try {
+          const response = await fetch(`/user_appointments/${id}`, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
+          if (response.ok) {
+            const appointment = await response.json();
+            console.log("Appointment:", appointment); // Отладка
+            document.getElementById("id").value = appointment.id;
+            document.getElementById("doctor_id").value = appointment.doctor_id;
+            document.getElementById("date_time").value = appointment.date_time
+              .replace("Z", "")
+              .slice(0, 16);
+          } else {
+            const error = await response.json();
+            console.error("Error fetching appointment:", error.message);
+          }
+        } catch (error) {
+          console.error("Error fetching appointment:", error);
+        }
+      }
+
+      // Подсветка ошибок
+      function highlightError(inputId, show = true) {
+        const input = document.getElementById(inputId);
+        if (show) {
+          input.classList.add("is-invalid");
+        } else {
+          input.classList.remove("is-invalid");
+        }
+      }
+
+      // Создать запись
+      async function createAppointment(user_id, doctor_id, date_time) {
+        try {
+          const response = await fetch("/user_appointments/", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({ user_id, doctor_id, date_time }),
+          });
+          highlightError("doctor_id", false);
+          if (response.ok) {
+            const appointment = await response.json();
+            console.log("Created appointment:", appointment); // Отладка
+            document.querySelector("tbody").append(row(appointment));
+            reset();
+          } else {
+            const error = await response.json();
+            console.error("Error creating appointment:", error.message);
+            if (error.error.includes("doctor")) {
+              highlightError("doctor_id", true);
+            }
+          }
+        } catch (error) {
+          console.error("Error creating appointment:", error);
+        }
+      }
+
+      // Редактировать запись
+      async function editAppointment(id, user_id, doctor_id, date_time) {
+        try {
+          const response = await fetch(`/user_appointments/${id}`, {
+            method: "PUT",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({ user_id, doctor_id, date_time }),
+          });
+          highlightError("doctor_id", false);
+          if (response.ok) {
+            const appointment = await response.json();
+            console.log("Updated appointment:", appointment); // Отладка
+            document
+              .querySelector(`tr[data-rowid='${appointment.id}']`)
+              .replaceWith(row(appointment));
+            reset();
+          } else {
+            const error = await response.json();
+            console.error("Error updating appointment:", error.message);
+            if (error.error.includes("doctor")) {
+              highlightError("doctor_id", true);
+            }
+          }
+        } catch (error) {
+          console.error("Error updating appointment:", error);
+        }
+      }
+
+      // Удалить запись
+      async function deleteAppointment(id) {
+        try {
+          const response = await fetch(`/user_appointments/${id}`, {
+            method: "DELETE",
+            headers: {
+              Accept: "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+          });
+          if (response.ok) {
+            console.log("Deleted appointment:", id); // Отладка
+            document.querySelector(`tr[data-rowid='${id}']`).remove();
+          } else {
+            const error = await response.json();
+            console.error("Error deleting appointment:", error.message);
+          }
+        } catch (error) {
+          console.error("Error deleting appointment:", error);
+        }
+      }
+
+      // Сброс формы
+      function reset() {
+        document.getElementById("id").value = "";
+        document.getElementById("doctor_id").value = "";
+        document.getElementById("date_time").value = "";
+        highlightError("doctor_id", false);
+      }
+
+      // Создать строку таблицы
+      function row(appointment) {
+        console.log("Rendering row:", appointment); // Отладка
+        const tr = document.createElement("tr");
+        tr.setAttribute("data-rowid", appointment.id);
+        const userTd = document.createElement("td");
+        userTd.textContent = appointment.user_name || "Unknown";
+        tr.append(userTd);
+        const doctorTd = document.createElement("td");
+        doctorTd.textContent = appointment.doctor_name || "Unknown";
+        tr.append(doctorTd);
+        const dateTimeTd = document.createElement("td");
+        dateTimeTd.textContent = appointment.date_time;
+        tr.append(dateTimeTd);
+        const linksTd = document.createElement("td");
+        const editLink = document.createElement("button");
+        editLink.textContent = "Змінити";
+        editLink.className = "table-buttons btn btn-outline-secondary";
+        editLink.addEventListener(
+          "click",
+          async () => await getAppointment(appointment.id)
+        );
+        linksTd.append(editLink);
+        const removeLink = document.createElement("button");
+        removeLink.textContent = "Видалити";
+        removeLink.className = "table-buttons btn btn-outline-danger";
+        removeLink.addEventListener(
+          "click",
+          async () => await deleteAppointment(appointment.id)
+        );
+        linksTd.append(removeLink);
+        tr.appendChild(linksTd);
+        return tr;
+      }
+
+      // Обработчики событий
+      document.getElementById("resetBtn").addEventListener("click", reset);
+      document.getElementById("saveBtn").addEventListener("click", async () => {
+        const id = document.getElementById("id").value;
+        const user_id = document.getElementById("user_id").value;
+        const doctor_id = document.getElementById("doctor_id").value;
+        const date_time = document.getElementById("date_time").value;
+        if (!doctor_id || !date_time) {
+          alert("Будь ласка, виберіть лікаря та дату/час");
+          return;
+        }
+        if (id === "") {
+          await createAppointment(user_id, doctor_id, date_time);
+        } else {
+          await editAppointment(id, user_id, doctor_id, date_time);
+        }
+      });
+
+      // Инициализация
+      populateDoctors();
+      getAppointments();
+    </script>
+  </body>
+</html>

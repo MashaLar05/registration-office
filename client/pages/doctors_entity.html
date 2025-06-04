@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ table_name }} Management</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" href="/static/styles/main.css" />
+    <link rel="stylesheet" type="text/css" href="/static/styles/entities.css" />
+  </head>
+  <body>
+    <h2 class="sub-title">{{ table_name }}</h2>
+    <div class="label">
+      <input type="hidden" id="id" />
+      <div class="input-group text name-last_name">
+        <span class="input-group-text">Ім'я та прізвище</span>
+        <input
+          id="name"
+          type="text"
+          aria-label="First name"
+          placeholder="Ім'я"
+          class="form-control"
+        />
+        <input
+          id="last_name"
+          type="text"
+          aria-label="Last name"
+          placeholder="Прізвище"
+          class="form-control"
+        />
+      </div>
+
+      <div class="input-group text mb-3">
+        <span class="input-group-text" id="basic-addon1">Кваліфікація</span>
+        <input
+          id="qualification"
+          type="text"
+          class="form-control"
+          placeholder="Кваліфікація"
+          aria-label="Qualification"
+          aria-describedby="basic-addon1"
+        />
+      </div>
+
+      <div class="text input-group flex-nowrap">
+        <span class="input-group-text" id="addon-wrapping"
+          >Дата народження:</span
+        >
+        <input
+          id="date_of_birth"
+          type="datetime-local"
+          class="form-control"
+          placeholder="Username"
+          aria-label="Username"
+          aria-describedby="addon-wrapping"
+        />
+      </div>
+
+      <div class="text buttons">
+        <button id="saveBtn" class="btn btn-outline-success">Зберегти</button>
+        <button id="resetBtn" class="btn btn-outline-secondary">Скинути</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="table table-sm table-hover table-striped">
+        <thead>
+          <tr>
+            <th>Ім'я</th>
+            <th>Прізвище</th>
+            <th>Кваліфікація</th>
+            <th>Дата народження</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <a href="/" class="btn btn-outline-secondary small-text m-3">Назад</a>
+    <script>
+      async function getDoctors() {
+        const response = await fetch("/doctors/", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+        if (response.ok === true) {
+          const doctors = await response.json();
+          const rows = document.querySelector("tbody");
+          doctors.forEach((doctor) => rows.append(row(doctor)));
+        }
+      }
+
+      async function getDoctor(id) {
+        const response = await fetch(`/doctors/${id}`, {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+        if (response.ok === true) {
+          const doctor = await response.json();
+          document.getElementById("id").value = doctor.id;
+          document.getElementById("name").value = doctor.name;
+          document.getElementById("last_name").value = doctor.last_name;
+          document.getElementById("date_of_birth").value = doctor.date_of_birth;
+        } else {
+          const error = await response.json();
+          console.log(error.message);
+        }
+      }
+
+      async function createDoctor(
+        name,
+        last_name,
+        qualification,
+        date_of_birth
+      ) {
+        const response = await fetch("/doctors/", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: name,
+            last_name: last_name,
+            qualification: qualification,
+            date_of_birth: date_of_birth,
+          }),
+        });
+        if (response.ok === true) {
+          const doctor = await response.json();
+          document.querySelector("tbody").append(row(doctor));
+          document.getElementById("id").value = doctor.id;
+        } else {
+          const error = await response.json();
+          console.log(error.message);
+        }
+      }
+
+      async function editDoctor(
+        id,
+        name,
+        last_name,
+        qualification,
+        date_of_birth
+      ) {
+        const response = await fetch(`/doctors/${id}`, {
+          method: "PUT",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: name,
+            last_name: last_name,
+            qualification: qualification,
+            date_of_birth: date_of_birth,
+          }),
+        });
+        if (response.ok === true) {
+          const doctor = await response.json();
+          document
+            .querySelector(`tr[data-rowid='${doctor.id}']`)
+            .replaceWith(row(doctor));
+        } else {
+          const error = await response.json();
+          console.log(error.message);
+        }
+      }
+
+      async function deleteDoctor(id) {
+        const response = await fetch(`/doctors/${id}`, {
+          method: "DELETE",
+          headers: { Accept: "application/json" },
+        });
+        if (response.ok === true) {
+          const doctor = await response.json();
+          document.querySelector(`tr[data-rowid='${doctor.id}']`).remove();
+        } else {
+          const error = await response.json();
+          console.log(error.message);
+        }
+      }
+
+      function reset() {
+        document.getElementById("id").value =
+          document.getElementById("name").value =
+          document.getElementById("date_of_birth").value =
+          document.getElementById("last_name").value =
+            "";
+      }
+
+      function row(doctor) {
+        const tr = document.createElement("tr");
+        tr.setAttribute("data-rowid", doctor.id);
+        const nameTd = document.createElement("td");
+        nameTd.append(doctor.name);
+        tr.append(nameTd);
+        const last_nameTd = document.createElement("td");
+        last_nameTd.append(doctor.last_name);
+        tr.append(last_nameTd);
+        const roleTd = document.createElement("td");
+        roleTd.append(doctor.qualification);
+        tr.append(roleTd);
+        const date_of_birthTd = document.createElement("td");
+        date_of_birthTd.append(doctor.date_of_birth);
+        tr.append(date_of_birthTd);
+        const linksTd = document.createElement("td");
+        const editLink = document.createElement("button");
+        editLink.append("Змінити");
+        editLink.className = "table-buttons btn btn-outline-secondary";
+        editLink.addEventListener(
+          "click",
+          async () => await getDoctor(doctor.id)
+        );
+        linksTd.append(editLink);
+        const removeLink = document.createElement("button");
+        removeLink.append("Видалити");
+        removeLink.className = "table-buttons btn btn-outline-danger";
+        removeLink.addEventListener(
+          "click",
+          async () => await deleteDoctor(doctor.id)
+        );
+        linksTd.append(removeLink);
+        tr.appendChild(linksTd);
+        return tr;
+      }
+
+      document
+        .getElementById("resetBtn")
+        .addEventListener("click", () => reset());
+
+      document.getElementById("saveBtn").addEventListener("click", async () => {
+        const id = document.getElementById("id").value;
+        const name = document.getElementById("name").value;
+        const last_name = document.getElementById("last_name").value;
+        const qualification = document.getElementById("qualification").value;
+        const date_of_birth = document.getElementById("date_of_birth").value;
+        if (id === "")
+          await createDoctor(name, last_name, qualification, date_of_birth);
+        else
+          await editDoctor(id, name, last_name, qualification, date_of_birth);
+        reset();
+      });
+
+      getDoctors();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" href="/static/styles/main.css" />
+  </head>
+  <body>
+    <header>{% include 'navbar.html' %}</header>
+    <div class="container mt-5">
+      <h2>Реєстрація</h2>
+      <form id="registerForm" method="post" action="/register/" class="m-3">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="name" class="form-label">Ім'я:</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="form-control"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="last_name" class="form-label">Прізвище:</label>
+          <input
+            type="text"
+            id="last_name"
+            name="last_name"
+            class="form-control"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Пароль:</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="date_of_birth" class="form-label">Дата народження:</label>
+          <input
+            type="date"
+            id="date_of_birth"
+            name="date_of_birth"
+            class="form-control"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="role" class="form-label">Роль:</label>
+          <select id="role" name="role" class="form-select">
+            <option value="user">Користувач</option>
+            <option value="admin">Адміністратор</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Зареєструватися</button>
+        <p>Вже є акаунт? <a href="/login/">Увійти</a></p>
+      </form>
+    </div>
+    <script>
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("name").value;
+          const last_name = document.getElementById("last_name").value;
+          const password = document.getElementById("password").value;
+          const date_of_birth = document.getElementById("date_of_birth").value;
+          const role = document.getElementById("role").value;
+
+          const response = await fetch("/register/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name,
+              last_name,
+              password,
+              date_of_birth,
+              role,
+            }),
+          });
+
+          const data = await response.json();
+          if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+          } else {
+            alert(data.error || "Registration failed");
+          }
+        });
+    </script>
+  </body>
+</html>
